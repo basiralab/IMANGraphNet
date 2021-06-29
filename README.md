@@ -63,7 +63,7 @@ In this example, we simulated a dataset with 150 samples where the number of reg
 </p>
 
 
-# YouTube videos on IMANGraphNet: 
+# YouTube video presentation of IMANGraphNet: 
 
 https://www.youtube.com/watch?v=kzS-PkOt5_4&ab_channel=BASIRALab
 
