@@ -65,10 +65,18 @@ In this example, we simulated a dataset with 150 samples where the number of reg
 
 # YouTube videos on IMANGraphNet: 
 
-
+https://www.youtube.com/watch?v=kzS-PkOt5_4&ab_channel=BASIRALab
 
 # Please cite the following paper when using IMANGraphNet:
 
+@inproceedings{mhiri2021non,
+  title={Non-isomorphic Inter-modality Graph Alignment and Synthesis for Holistic Brain Mapping},
+  author={Mhiri, Islem and Nebli, Ahmed and Mahjoub, Mohamed Ali and Rekik, Islem},
+  booktitle={International Conference on Information Processing in Medical Imaging},
+  pages={203--215},
+  year={2021},
+  organization={Springer}
+}
 
 # License
 Our code is released under MIT License (see LICENSE file for details).
