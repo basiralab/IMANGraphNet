@@ -67,6 +67,10 @@ In this example, we simulated a dataset with 150 samples where the number of reg
 
 https://www.youtube.com/watch?v=kzS-PkOt5_4&ab_channel=BASIRALab
 
+# Paper link on arXiv
+
+https://arxiv.org/abs/2107.06281
+
 # Please cite the following paper when using IMANGraphNet:
 ```latex
 @inproceedings{mhiri2021non,
