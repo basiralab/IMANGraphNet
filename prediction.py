@@ -18,6 +18,7 @@ from losses import*
 from model import*
 from preprocess import*
 from centrality import *
+from config import N_TARGET_NODES_F, N_SOURCE_NODES_F,N_TARGET_NODES,N_SOURCE_NODES, N_EPOCHS
 warnings.filterwarnings("ignore")
 #  GAN
 aligner = Aligner()
@@ -48,7 +49,7 @@ def IMANGraphNet (X_train_source, X_test_source, X_train_target, X_test_target):
     generator.train()
     discriminator.train()
 
-    nbre_epochs = 2
+    nbre_epochs = N_EPOCHS
     for epochs in range(nbre_epochs):
         # Train Generator
         with torch.autograd.set_detect_anomaly(True):
@@ -61,20 +62,20 @@ def IMANGraphNet (X_train_source, X_test_source, X_train_target, X_test_target):
             i = 0
             for data_source, data_target in zip(X_casted_train_source, X_casted_train_target):
                 # print(i)
-                targett = data_target.edge_attr.view(160, 160)
+                targett = data_target.edge_attr.view(N_TARGET_NODES, N_TARGET_NODES)
                 # ************    Domain alignment    ************
                 A_output = aligner(data_source)
                 A_casted = convert_generated_to_graph_Al(A_output)
                 A_casted = A_casted[0]
 
-                target = data_target.edge_attr.view(160, 160).detach().cpu().clone().numpy()
+                target = data_target.edge_attr.view(N_TARGET_NODES, N_TARGET_NODES).detach().cpu().clone().numpy()
                 target_mean = np.mean(target)
                 target_std = np.std(target)
 
-                d_target = torch.normal(target_mean, target_std, size=(1, 595))
+                d_target = torch.normal(target_mean, target_std, size=(1, N_SOURCE_NODES_F))
                 dd_target = cast_data_vector_RH(d_target)
                 dd_target = dd_target[0]
-                target_d = dd_target.edge_attr.view(35, 35)
+                target_d = dd_target.edge_attr.view(N_SOURCE_NODES, N_SOURCE_NODES)
 
                 kl_loss = Alignment_loss(target_d, A_output)
 
@@ -83,7 +84,7 @@ def IMANGraphNet (X_train_source, X_test_source, X_train_target, X_test_target):
                 # ************     Super-resolution    ************
                 G_output = generator(A_casted)  # 35 x 35
                 # print("G_output: ", G_output.shape)
-                G_output_reshaped = (G_output.view(1, 160, 160, 1).type(torch.FloatTensor)).detach()
+                G_output_reshaped = (G_output.view(1, N_TARGET_NODES, N_TARGET_NODES, 1).type(torch.FloatTensor)).detach()
                 G_output_casted = convert_generated_to_graph(G_output_reshaped)
                 G_output_casted = G_output_casted[0]
                 torch.cuda.empty_cache()
@@ -150,8 +151,8 @@ def IMANGraphNet (X_train_source, X_test_source, X_train_target, X_test_target):
     Eigenvector_test = []
     for data_source, data_target in zip(X_casted_test_source, X_casted_test_target):
         # print(i)
-        data_source_test = data_source.x.view(35, 35)
-        data_target_test = data_target.x.view(160, 160)
+        data_source_test = data_source.x.view(N_SOURCE_NODES, N_SOURCE_NODES)
+        data_target_test = data_target.x.view(N_TARGET_NODES, N_TARGET_NODES)
 
 
         A_test = aligner(data_source)

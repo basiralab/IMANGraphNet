@@ -8,25 +8,26 @@ from torch_geometric.nn import BatchNorm
 import numpy as np
 from torch_geometric.data import Data
 from torch.autograd import Variable
-
+from config import N_TARGET_NODES_F, N_SOURCE_NODES_F,N_TARGET_NODES,N_SOURCE_NODES
 
 
 
 class Aligner(torch.nn.Module):
     def __init__(self):
+        
         super(Aligner, self).__init__()
 
-        nn = Sequential(Linear(1, 1225), ReLU())
-        self.conv1 = NNConv(35, 35, nn, aggr='mean', root_weight=True, bias=True)
-        self.conv11 = BatchNorm(35, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
+        nn = Sequential(Linear(1, N_SOURCE_NODES*N_SOURCE_NODES), ReLU())
+        self.conv1 = NNConv(N_SOURCE_NODES, N_SOURCE_NODES, nn, aggr='mean', root_weight=True, bias=True)
+        self.conv11 = BatchNorm(N_SOURCE_NODES, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
-        nn = Sequential(Linear(1, 35), ReLU())
-        self.conv2 = NNConv(35, 1, nn, aggr='mean', root_weight=True, bias=True)
+        nn = Sequential(Linear(1, N_SOURCE_NODES), ReLU())
+        self.conv2 = NNConv(N_SOURCE_NODES, 1, nn, aggr='mean', root_weight=True, bias=True)
         self.conv22 = BatchNorm(1, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
-        nn = Sequential(Linear(1, 35), ReLU())
-        self.conv3 = NNConv(1, 35, nn, aggr='mean', root_weight=True, bias=True)
-        self.conv33 = BatchNorm(35, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
+        nn = Sequential(Linear(1, N_SOURCE_NODES), ReLU())
+        self.conv3 = NNConv(1, N_SOURCE_NODES, nn, aggr='mean', root_weight=True, bias=True)
+        self.conv33 = BatchNorm(N_SOURCE_NODES, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
 
     def forward(self, data):
@@ -39,8 +40,8 @@ class Aligner(torch.nn.Module):
         x2 = F.dropout(x2, training=self.training)
 
         x3 = torch.cat([F.sigmoid(self.conv33(self.conv3(x2, edge_index, edge_attr))), x1], dim=1)
-        x4 = x3[:, 0:35]
-        x5 = x3[:, 35:70]
+        x4 = x3[:, 0:N_SOURCE_NODES]
+        x5 = x3[:, N_SOURCE_NODES:2*N_SOURCE_NODES]
 
         x6 = (x4 + x5) / 2
         return x6
@@ -56,20 +57,20 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        nn = Sequential(Linear(1, 1225),ReLU())
-        self.conv1 = NNConv(35, 35, nn, aggr='mean', root_weight=True, bias=True)
-        self.conv11 = BatchNorm(35, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
+        nn = Sequential(Linear(1, N_SOURCE_NODES*N_SOURCE_NODES),ReLU())
+        self.conv1 = NNConv(N_SOURCE_NODES, N_SOURCE_NODES, nn, aggr='mean', root_weight=True, bias=True)
+        self.conv11 = BatchNorm(N_SOURCE_NODES, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
-        nn = Sequential(Linear(1, 5600), ReLU())
-        self.conv2 = NNConv(160, 35, nn, aggr='mean', root_weight=True, bias=True)
-        self.conv22 = BatchNorm(35, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
+        nn = Sequential(Linear(1, N_TARGET_NODES*N_SOURCE_NODES), ReLU())
+        self.conv2 = NNConv(N_TARGET_NODES, N_SOURCE_NODES, nn, aggr='mean', root_weight=True, bias=True)
+        self.conv22 = BatchNorm(N_SOURCE_NODES, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
-        nn = Sequential(Linear(1, 5600), ReLU())
-        self.conv3 = NNConv(35, 160, nn, aggr='mean', root_weight=True, bias=True)
-        self.conv33 = BatchNorm(160, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
+        nn = Sequential(Linear(1, N_TARGET_NODES*N_SOURCE_NODES), ReLU())
+        self.conv3 = NNConv(N_SOURCE_NODES, N_TARGET_NODES, nn, aggr='mean', root_weight=True, bias=True)
+        self.conv33 = BatchNorm(N_TARGET_NODES, eps=1e-03, momentum=0.1, affine=True, track_running_stats=True)
 
 
-        # self.layer= torch.nn.ConvTranspose2d(160, 160,5)
+        # self.layer= torch.nn.ConvTranspose2d(N_TARGET_NODES, N_TARGET_NODES,5)
 
 
     def forward(self, data):
@@ -94,8 +95,8 @@ class Generator(nn.Module):
 class Discriminator(torch.nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
-        self.conv1 = GCNConv(160, 160, cached=True)
-        self.conv2 = GCNConv(160, 1, cached=True)
+        self.conv1 = GCNConv(N_TARGET_NODES, N_TARGET_NODES, cached=True)
+        self.conv2 = GCNConv(N_TARGET_NODES, 1, cached=True)
 
     def forward(self, data):
         x, edge_index, edge_attr = data.x, data.pos_edge_index, data.edge_attr
