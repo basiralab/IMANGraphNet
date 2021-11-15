@@ -61,6 +61,7 @@ from preprocess import*
 from prediction import*
 from centrality import *
 from plots import*
+from config import N_TARGET_NODES_F,N_SOURCE_NODES_F,N_SUBJECTS,N_EPOCHS
 warnings.filterwarnings("ignore")
 
 
@@ -76,8 +77,8 @@ else:
     device = torch.device("cpu")
     print("running on CPU")
 
-source_data = np.random.normal(0, 0.5, (150, 595))
-target_data = np.random.normal(0, 0.5, (150, 12720))
+source_data = np.random.normal(0, 0.5, (N_SUBJECTS, N_SOURCE_NODES_F))
+target_data = np.random.normal(0, 0.5, (N_SUBJECTS, N_TARGET_NODES_F))
 
 kf = KFold(n_splits=3, shuffle=True, random_state=1773)
 
